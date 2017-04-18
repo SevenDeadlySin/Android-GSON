@@ -9,7 +9,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Deserialization
         Gson gson = new Gson();
+
         Employee employee = gson.fromJson(jsonEmployee,Employee.class);
 
         String result = "Name : "+employee.getName()+"\nProfession : "+employee.getProfession()+"\nProfile ID: "
@@ -63,8 +66,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSaveGenericDataButton(View view) {
+
+        //create employee object
+        Employee employee = new Employee();
+        employee.setName("Royce Jonhson");
+        employee.setProfession("Software Architect");
+        employee.setPro_id(289);
+        employee.setRoles(Arrays.asList("Admin","Supervisor"));
+
+        //generic
+        Foo<Employee> fooEmployee = new Foo<Employee>();
+        fooEmployee.setObject(employee);
+        Gson gson = new Gson();
+
+        Type type = new TypeToken<Foo<Employee>>(){}.getType();
+
+        String jsonFoo = gson.toJson(fooEmployee,type);
+
+        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("Employee1",jsonFoo);
+        editor.apply();
+
+
     }
 
     public void onLoadGenericDataButton(View view) {
+
+        SharedPreferences sharedPreferences = getPreferences(Context.MODE_PRIVATE);
+        String StringFoo = sharedPreferences.getString("Employee1","N/A");
+        Gson gson = new Gson();
+        Foo<Employee> fooEmployee = gson.fromJson(StringFoo,new TypeToken<Foo<Employee>>(){}.getType());
+        Employee employee = fooEmployee.getObject();
+
+        String result = "Name : "+employee.getName()+"\nProfession : "+employee.getProfession()+"\nProfile ID: "
+                +employee.getPro_id()+"\nRole : "+employee.getRoles().get(0)+","+employee.getRoles().get(1);
+
+        textViewResult.setText(result);
+
     }
+
 }
